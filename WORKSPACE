@@ -406,7 +406,7 @@ http_file(
 )
 
 # This SHA is obtained from istio/api
-ISTIO_API = "3e3fd02fdd45ec7abd4b09af9d0c548634950973"
+ISTIO_API = "fadf8937f1e3b88a0a5fb7325d34259f0d65d947"
 
 git_repository(
     name = "io_istio_api",
