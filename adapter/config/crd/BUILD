@@ -7,7 +7,7 @@ go_library(
         "config.go",
         "controller.go",
         "conversion.go",
-        "types.go",
+        "types.go",  # keep
     ],
     visibility = ["//visibility:public"],
     deps = [

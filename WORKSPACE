@@ -111,18 +111,6 @@ go_repository(
 )
 
 go_repository(
-    name = "com_github_gogo_protobuf",
-    commit = "c0656edd0d9eab7c66d1eb0c568f9039345796f7",
-    importpath = "github.com/gogo/protobuf",
-)
-
-go_repository(
-    name = "com_github_golang_glog",
-    commit = "44145f04b68cf362d9c4df2182967c2275eaefed",
-    importpath = "github.com/golang/glog",
-)
-
-go_repository(
     name = "com_github_golang_groupcache",
     commit = "02826c3e79038b59d737d3b1c0a1d937f71a4433",
     importpath = "github.com/golang/groupcache",
@@ -213,12 +201,6 @@ go_repository(
 )
 
 go_repository(
-    name = "org_golang_x_net",
-    commit = "f2499483f923065a842d38eb4c7f1927e6fc6e6d",
-    importpath = "golang.org/x/net",
-)
-
-go_repository(
     name = "org_golang_x_oauth2",
     commit = "a6bd8cefa1811bd24b86f8902872e4e8225f74c4",
     importpath = "golang.org/x/oauth2",
@@ -234,13 +216,6 @@ go_repository(
     name = "org_golang_x_sys",
     commit = "8f0908ab3b2457e2e15403d3697c9ef5cb4b57a9",
     importpath = "golang.org/x/sys",
-)
-
-go_repository(
-    name = "org_golang_x_text",
-    build_file_name = "BUILD.bazel",  # darwin build: case insensitive file system problem
-    commit = "2910a502d2bf9e43193af9d68ca516529614eed3",
-    importpath = "golang.org/x/text",
 )
 
 go_repository(
@@ -394,12 +369,6 @@ go_repository(
 )
 
 go_repository(
-    name = "org_golang_google_genproto",
-    commit = "411e09b969b1170a9f0c467558eb4c4c110d9c77",
-    importpath = "google.golang.org/genproto",
-)
-
-go_repository(
     name = "com_github_hashicorp_go_rootcerts",
     commit = "6bb64b370b90e7ef1fa532be9e591a81c3493e00",  # May 3 2016
     importpath = "github.com/hashicorp/go-rootcerts",
@@ -436,90 +405,18 @@ http_file(
     url = "https://storage.googleapis.com/istio-build/proxy/envoy-debug-" + ISTIO_PROXY_BUCKET + ".tar.gz",
 )
 
-##
-## Protobuf codegen rules
-##
-
-# Note: do not use go_proto_repositories since it has old versions of protobuf and grpc-go
-
-go_repository(
-    name = "com_github_golang_protobuf",
-    commit = "8ee79997227bf9b34611aee7946ae64735e6fd93",
-    importpath = "github.com/golang/protobuf",
-)
+# This SHA is obtained from istio/api
+ISTIO_API = "3e3fd02fdd45ec7abd4b09af9d0c548634950973"
 
 git_repository(
-    name = "com_github_google_protobuf",
-    commit = "593e917c176b5bc5aafa57bf9f6030d749d91cd5",  # Jan 2017 3.2.0
-    remote = "https://github.com/google/protobuf.git",
-)
-
-go_repository(
-    name = "org_golang_google_grpc",
-    commit = "8050b9cbc271307e5a716a9d782803d09b0d6f2d",  # v1.2.1
-    importpath = "google.golang.org/grpc",
-)
-
-# This SHA is obtained from istio/api
-ISTIO_API = "1e039b5b0312aeadf958039c7330faeaf66917b1"
-
-new_git_repository(
     name = "io_istio_api",
-    build_file_content = """
-load("@io_bazel_rules_go//go:def.bzl", "go_prefix")
-load("@io_bazel_rules_go//proto:go_proto_library.bzl", "go_proto_library")
-package(default_visibility = ["//visibility:public"])
-go_prefix("istio.io/api/proxy/v1/config")
-go_proto_library(
-    name = "go_default_library",
-    srcs = glob(["proxy/v1/config/*.proto"]),
-    deps = [
-        "@com_github_golang_protobuf//ptypes/any:go_default_library",
-        "@com_github_golang_protobuf//ptypes/duration:go_default_library",
-        "@com_github_golang_protobuf//ptypes/wrappers:go_default_library",
-    ],
-)
-filegroup(
-    name = "mixer",
-    srcs = glob(["mixer/v1/*.proto"]),
-)
-filegroup(
-    name = "wordlist",
-    srcs = ["mixer/v1/global_dictionary.yaml"],
-)
-    """,
     commit = ISTIO_API,
     remote = "https://github.com/istio/api.git",
 )
 
-GOOGLEAPIS_BUILD_FILE = """
-package(default_visibility = ["//visibility:public"])
+load("@io_istio_api//:api.bzl", "go_istio_api_dependencies")
 
-load("@io_bazel_rules_go//go:def.bzl", "go_prefix")
-load("@io_bazel_rules_go//proto:go_proto_library.bzl", "go_proto_library")
-go_prefix("github.com/googleapis/googleapis/google/rpc")
-
-go_proto_library(
-    name = "go_default_library",
-    srcs = [
-          "google/rpc/code.proto",
-          "google/rpc/error_details.proto",
-          "google/rpc/status.proto",
-    ],
-    deps = [
-          "@com_github_golang_protobuf//ptypes/any:go_default_library",
-          "@com_github_golang_protobuf//ptypes/duration:go_default_library",
-          "@com_github_golang_protobuf//ptypes/wrappers:go_default_library",
-    ],
-)
-"""
-
-new_git_repository(
-    name = "com_github_googleapis_googleapis",
-    build_file_content = GOOGLEAPIS_BUILD_FILE,
-    commit = "13ac2436c5e3d568bd0e938f6ed58b77a48aba15",  # Oct 21, 2016 (only release pre-dates sha)
-    remote = "https://github.com/googleapis/googleapis.git",
-)
+go_istio_api_dependencies()
 
 ##
 ## Mock codegen rules

@@ -22,8 +22,8 @@ import (
 
 	"google.golang.org/grpc"
 
+	istio_mixer_v1 "istio.io/api/mixer/v1"
 	"istio.io/pilot/test/mixer"
-	"istio.io/pilot/test/mixer/istio_mixer_v1"
 )
 
 var (

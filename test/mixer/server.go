@@ -18,11 +18,10 @@ import (
 	"fmt"
 	"sync/atomic"
 
-	"github.com/golang/protobuf/ptypes"
-	google_rpc "github.com/googleapis/googleapis/google/rpc"
 	"golang.org/x/net/context"
 
-	"istio.io/pilot/test/mixer/istio_mixer_v1"
+	google_rpc "istio.io/api/google/rpc"
+	istio_mixer_v1 "istio.io/api/mixer/v1"
 	words "istio.io/pilot/test/mixer/wordlist"
 )
 
@@ -35,14 +34,15 @@ type Server struct {
 // Check implements service check
 func (s *Server) Check(ctx context.Context, msg *istio_mixer_v1.CheckRequest) (*istio_mixer_v1.CheckResponse, error) {
 	atomic.AddUint64(&s.counter, 1)
-	bag := s.decode(msg.Attributes)
+	attributes := msg.Attributes
+	bag := s.decode(&attributes)
 	fmt.Printf("[%d] words.size=%d\n", s.counter, len(msg.Attributes.Words))
 	for k, v := range bag {
 		fmt.Printf("[%d] %s=%s\n", s.counter, k, v)
 	}
 	return &istio_mixer_v1.CheckResponse{
-		Precondition: &istio_mixer_v1.CheckResponse_PreconditionResult{
-			Status: &google_rpc.Status{Code: 0},
+		Precondition: istio_mixer_v1.CheckResponse_PreconditionResult{
+			Status: google_rpc.Status{Code: 0},
 		},
 	}, nil
 }
@@ -94,20 +94,10 @@ func (s *Server) decode(attrs *istio_mixer_v1.Attributes) map[string]string {
 		out[word(k)] = fmt.Sprintf("%t", v)
 	}
 	for k, v := range attrs.Timestamps {
-		d, err := ptypes.Timestamp(v)
-		if err != nil {
-			out[word(k)] = err.Error()
-		} else {
-			out[word(k)] = d.String()
-		}
+		out[word(k)] = v.String()
 	}
 	for k, v := range attrs.Durations {
-		d, err := ptypes.Duration(v)
-		if err != nil {
-			out[word(k)] = err.Error()
-		} else {
-			out[word(k)] = d.String()
-		}
+		out[word(k)] = v.String()
 	}
 	for k, v := range attrs.Bytes {
 		out[word(k)] = fmt.Sprintf("%#v", v)
